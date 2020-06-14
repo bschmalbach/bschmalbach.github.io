@@ -58,7 +58,7 @@ input[type='checkbox'] {
 
   padding: 1rem;
 
-  color: #3085c9;
+  color: #FFFFFF;
   background: #3085c9;
 
   cursor: pointer;
@@ -112,6 +112,20 @@ input[type='checkbox'] {
   padding: .5rem 1rem;
 }
 </style>
+<script>
+let myLabels = document.querySelectorAll('.lbl-toggle');
+
+Array.from(myLabels).forEach(label => {
+  label.addEventListener('keydown', e => {
+    // 32 === spacebar
+    // 13 === enter
+    if (e.which === 32 || e.which === 13) {
+      e.preventDefault();
+      label.click();
+    };
+  });
+});
+</script>
 
 <style type="text/css">
 h1 {

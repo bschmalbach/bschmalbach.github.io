@@ -39,92 +39,47 @@ if (window.hljs) {
 }
 </script>
 <style>
-.wrap-collabsible {
-  margin-bottom: 1.2rem 0;
+/* Style the button that is used to open and close the collapsible content */
+.collapsible {
+ background-color: #eee;
+ color: #444;
+ cursor: pointer;
+ padding: 18px;
+ width: 100%;
+ border: none;
+ text-align: left;
+ outline: none;
+ font-size: 15px;
 }
 
-input[type='checkbox'] {
-  display: none;
+/* Add a background color to the button if it is clicked on (add the .active class with JS), and when you move the mouse over it (hover) */
+.active, .collapsible:hover {
+ background-color: #ccc;
 }
 
-.lbl-toggle {
-  display: block;
-
-  font-weight: bold;
-  font-family: monospace;
-  font-size: 1.2rem;
-  text-transform: uppercase;
-  text-align: center;
-
-  padding: 1rem;
-
-  color: #FFFFFF;
-  background: #3085c9;
-
-  cursor: pointer;
-
-  border-radius: 7px;
-  transition: all 0.25s ease-out;
-}
-
-.lbl-toggle:hover {
-  color: #000000;
-}
-
-.lbl-toggle::before {
-  content: ' ';
-  display: inline-block;
-
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
-  border-left: 5px solid currentColor;
-  vertical-align: middle;
-  margin-right: .7rem;
-  transform: translateY(-2px);
-
-  transition: transform .2s ease-out;
-}
-
-.toggle:checked + .lbl-toggle::before {
-  transform: rotate(90deg) translateX(-3px);
-}
-
-.collapsible-content {
-  max-height: 0px;
-  overflow: hidden;
-  transition: max-height .25s ease-in-out;
-}
-
-.toggle:checked + .lbl-toggle + .collapsible-content {
-  max-height: 100vh;
-}
-
-.toggle:checked + .lbl-toggle {
-  border-bottom-right-radius: 0;
-  border-bottom-left-radius: 0;
-}
-
-.collapsible-content .content-inner {
-  background: #72a5cf;
-  border-bottom: 1px solid #20517a;
-  border-bottom-left-radius: 7px;
-  border-bottom-right-radius: 7px;
-  padding: .5rem 1rem;
+/* Style the collapsible content. Note: hidden by default */
+.content {
+ padding: 0 18px;
+ display: none;
+ overflow: hidden;
+ background-color: #f1f1f1;
 }
 </style>
 <script>
-let myLabels = document.querySelectorAll('.lbl-toggle');
+var coll = document.getElementsByClassName("collapsible");
+var i;
 
-Array.from(myLabels).forEach(label => {
-  label.addEventListener('keydown', e => {
-    // 32 === spacebar
-    // 13 === enter
-    if (e.which === 32 || e.which === 13) {
-      e.preventDefault();
-      label.click();
-    };
+for (i = 0; i < coll.length; i++) {
+  coll[i].addEventListener("click", function() {
+    this.classList.toggle("active");
+    var content = this.nextElementSibling;
+    if (content.style.display === "block") {
+      content.style.display = "none";
+    } else {
+      content.style.display = "block";
+    }
   });
-});
+}
 </script>
 
 <style type="text/css">
@@ -355,42 +310,20 @@ Global site tag (gtag.js) - Google Analytics -->
 <h1 class="title toc-ignore">Research</h1>
 <p><font size="4"><br>
 
-  <div class="wrap-collabsible">
-    <input id="collapsible" class="toggle" type="checkbox">
-    <label for="collapsible" class="lbl-toggle">Structural Equation Modeling</label>
-    <div class="collapsible-content">
-      <div class="content-inner">
-        <p>
-          I am interested in ...
-        </p>
-      </div>
-    </div>
-  </div>
-
+  <button type="button" class="collapsible">Structural Equation Modeling</button>
+ <div class="content">
+   <p>Lorem ipsum...</p>
+ </div>
 <br>
-  <div class="wrap-collabsible">
-    <input id="collapsible" class="toggle" type="checkbox">
-    <label for="collapsible" class="lbl-toggle">Measurement Theory and Response Behavior</label>
-    <div class="collapsible-content">
-      <div class="content-inner">
-        <p>
-          I am interested in ...
-        </p>
-      </div>
-    </div>
-  </div>
+ <button type="button" class="collapsible">Measurement Theory and Response Behavior</button>
+<div class="content">
+  <p>Lorem ipsum...</p>
+</div>
 <br>
-  <div class="wrap-collabsible">
-    <input id="collapsible" class="toggle" type="checkbox">
-    <label for="collapsible" class="lbl-toggle">Determinants of Psychological Disorders</label>
-    <div class="collapsible-content">
-      <div class="content-inner">
-        <p>
-          I am interested in ...
-        </p>
-      </div>
-    </div>
-  </div>
+<button type="button" class="collapsible">Determinants of Psychological Disorders</button>
+<div class="content">
+ <p>Lorem ipsum...</p>
+</div>
 
 
 <p></font></p>

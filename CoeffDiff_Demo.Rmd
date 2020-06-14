@@ -1,0 +1,263 @@
+---
+title: "Testing for Differences between Two Coefficients"
+output: 
+  html_document:
+    toc: true
+    toc_float: false
+---
+
+<font size="3">
+
+```{r echo = F}
+knitr::opts_chunk$set(message = F, cache = T, warning = F)  
+```
+
+<br>
+
+# Overview
+
+In this demo, we will discuss how to test whether two regression coefficients differ signficantly from each other. 
+
+The reason for conducting such an analysis is that in psychology (and other disciplines) we sometimes want to know whether the effect of our focal construct (or variable) is a better predictor of a particular outcome compared to another construct (or variable). As discussed in work by [Gelman & Stern (2006)](https://www.tandfonline.com/doi/abs/10.1198/000313006x152649), we cannot reach this conclusion using the traditional output of a regression model alone. They make the point that just because one variable significantly predicts the outcome and another does not, does not mean that the two variables are *significantly different from each other*. [Shrout & Yip-Bannicq (2017)](https://psycnet.apa.org/record/2016-59616-001) also reinforce this point and emphasize the importance of testing whether coefficients are significantly different from each other, not just from 0. 
+
+<br>
+
+
+# Dataset
+
+As an example, we will use the `affect` dataset from the `psych` package in R. Generally speaking, this dataset contains variables corresponding to 5 scales from the Eysenck Personality Inventory and the Motivational State Questionnaire, which was administered twice. For the purposes of this demo, we will examine only extraversion (`ext`) and neuroticism (`neur`) scores as predictors, and tense arousal (`TA2`) from the second measurement occasion as the outcome. 
+
+```{r library and data, echo = TRUE, results = 'hide', message = FALSE}
+library(dplyr)
+library(car)
+library(psych)
+```
+
+```{r}
+head(affect)
+```
+
+<br>
+
+For the purposes of this demo, we will test a relatively straight-forward hypothesis: Neuroticism (`neur`) is a significantly stronger predictor of tense arousal (`EA2`) than extraversion (`ext`). 
+
+<br>
+
+# Data Prep
+
+We will first mean center our two predictors. 
+
+```{r center}
+affect$neur.c <- scale(affect$neur, center = T, scale = F)
+affect$ext.c <- scale(affect$ext, center = T, scale = F)
+```
+<br>
+
+# Model Fit
+
+Next, we will fit a regression model in which tense arousal from the second measurement occasion is a function of neuroticism and extraversion.
+
+```{r model}
+fit <- lm(TA2 ~ neur.c + ext.c, data = affect) 
+summary(fit)
+```
+
+<br>
+The results indicate that neuroticism significantly predicts tense arousal, whereas extraversion does not. We also see that the size of the coefficient for neuroticism is larger than the coefficient for extraversion. Based on this, it would be tempting conclude that neuroticism is a "stronger" or "better" predictor of tense arousal. 
+
+However, we actually cannot draw this conclusion based on this information alone, as discussed by [Gelman and Stern (2006)](https://www.tandfonline.com/doi/abs/10.1198/000313006x152649) and [Shrout and Yip-Bannicq (2017)](https://psycnet.apa.org/record/2016-59616-001).
+
+<br>
+
+# Testing Differences in Coefficients
+To properly test our hypothesis, we need to test the difference in our coefficients directly. 
+
+We will first do this using the `linearHypothesis` function from the `car` package. All we need to do is enter the name of our `lm` model object and the hypothesis we are interested in testing, as shown below.
+
+```{r}
+linearHypothesis(fit, "neur.c - ext.c = 0")
+```
+
+Here, we see that although the effect of neuroticsm was significantly different from 0 and the effect of extraversion was not in our original model, we are unable to conclude that they are signficantly different *from each other.*
+
+<br>
+
+
+# Going Further: Estimate and CI of the Difference
+
+Although we have now tested our hypothesis, there are still other things we might want to know. For example, the test we performed did not provide an estimate or confidence interval of the difference in these coefficients, which are suggested by Shrout & Yip-Bannicq (2017).
+
+There are a few ways one could go about doing this, but I found it best to simply write my own function, thereby ensuring I could obtain all the information I wanted. 
+
+The function below can be run so that estimates and tests of the difference between two coefficient can be obtained in a single line of code. 
+```{r diff test function, tidy = F}
+difftest_lm <- function(x1, x2, model){
+  diffest <- summary(model)$coef[x1,"Estimate"]-summary(model)$coef[x2,"Estimate"]
+  vardiff <- (summary(model)$coef[x1,"Std. Error"]^2 + 
+                summary(model)$coef[x2,"Std. Error"]^2) - (2*(vcov(model)[x1, x2])) 
+  # variance of x1 + variance of x2 - 2*covariance of x1 and x2
+  diffse <- sqrt(vardiff)
+  tdiff <- (diffest)/(diffse)
+  ptdiff <- 2*(1-pt(abs(tdiff), model$df, lower.tail=T))
+  upr <- diffest + 1.96*diffse
+  lwr <- diffest - 1.96*diffse 
+  df <- model$df
+  return(list(est=round(diffest, digits =2), 
+              t=round(tdiff, digits = 2), 
+              p=round(ptdiff, digits = 4), 
+              lwr=round(lwr, digits = 2), 
+              upr=round(upr, digits = 2),
+              df = df))
+}
+```
+
+<br>
+
+Let's apply the function to our example model:
+
+```{r}
+difftest_lm("neur.c", "ext.c", fit)
+```
+
+<br>
+
+We see that the p-value matches the p-value we got using the `linearHypothesis` function. However, we are also now able to see that the estimated difference between extraversion and neuroticism is *b* = `r difftest_lm("neur.c", "ext.c", fit)$est`, and the 95% CI ranges from `r difftest_lm("neur.c", "ext.c", fit)$lwr` to `r difftest_lm("neur.c", "ext.c", fit)$upr`.
+
+<br>
+
+# Bayesian Version
+
+Thus far, we have focused on testing differences in coefficients using the Frequentist approach. However, a comparable analysis can also be performed using a Bayesian model. In fact, testing for differences in coefficients is arguably more straight-forward with Bayesian estimation. Because Bayesian estimation involves generating a distribution of possible values given the dataset (known as the *posterior distribution*) for each parameter, to get the difference in two coefficients we only need to take the difference of their posterior distributions. 
+
+First, we will estimate the same model in a Bayesian way using the `brms` package for R. Note that this package uses similar syntax to the `lm()` function we used to estimate our model before. 
+```{r, results = "hide"}
+library(brms)
+bfit <- brm(TA2 ~ neur.c + ext.c, data = affect, seed = 111) 
+```
+```{r, cache = F}
+summary(bfit)
+```
+
+We see that, having used default (noninformative) priors in our Bayesian analysis, the estimates for `neur.c` and `ext.c` are essentially the same as those obtained in the Frequentist analysis.
+
+We can now test for the difference in these coefficients. Here are two ways of doing this.
+
+First, we can use the `hypothesis()` function from `brms`. This is a helpful and easy-to-use function, as all we need to do is feed in the name of the model object and specify the hypothesis we want to test.
+```{r}
+hypothesis(bfit, "neur.c - ext.c = 0")
+```
+
+Again, we see that the point estimate for the difference and the 95% credibility interval look similar to the results we found before.
+
+A second approach simply involves going through the steps that `hypothesis()` uses under the hood: extracting the posterior distributions for both coefficients and then taking their difference. 
+
+To begin, we need to pull out the posterior samples from our model.
+```{r}
+bfit_post <- posterior_samples(bfit)
+```
+
+Next, we use simple subtraction to take the difference in the two posterior distributions of interest and compute the mean and 95% credibility interval of this difference. (Note that the variables referring to the posterior draws have the prefix "b_" added to them).
+```{r}
+bfit_diff <- bfit_post$b_neur.c - bfit_post$b_ext.c
+mean(bfit_diff) %>% round(digits = 2)
+quantile(bfit_diff, probs = c(.025, .975)) %>% round(digits = 2)
+```
+
+These results are the same as those obtained using the `hypothesis()` function. 
+
+A nice way to visualize the difference in `neur.c` and `ext.c` is to plot the posterior distributions for each coefficient, as well as the posterior distribution of their difference. The plots below show these distributions, along with the predicted mean value (dot) and 95% credibility interval (solid line along the x-axis). The zero line is emphasized with the dashed gray line.
+
+With this visualization, we can see that there is a positive value for the difference of `neur.c` and `ext.c`, but that zero cannot be ruled out as a plausible value. 
+
+```{r, warning = F, message = F}
+postdensplot <- function(m, var1, var2, name1, name2){
+  require(brms)
+  require(dplyr)
+  var1name <- noquote(paste("b_", var1, sep = ""))
+  var2name <- noquote(paste("b_", var2, sep = ""))
+  mp <- as.data.frame(posterior_samples(m))
+  var1_post <- dplyr::select(mp, var1name)
+  var2_post <- dplyr::select(mp, var2name)
+  diff <- as.data.frame(var1_post - var2_post)
+  
+  mpost_var1 <- data.frame(post = var1_post, Coefficient = name1)
+  colnames(mpost_var1) <- c("post", "Coefficient")
+  mpost_var2 <- data.frame(post = var2_post, Coefficient = name2)
+  colnames(mpost_var2) <- c("post", "Coefficient")
+  mpost_diff <- data.frame(post = diff, Coefficient = paste(name1, name2, sep = "-"))
+  colnames(mpost_diff) <- c("post", "Coefficient")
+  mpost_long_df <- rbind(mpost_var1, mpost_var2, mpost_diff)
+  mpost_long_df <- mpost_long_df %>% group_by(Coefficient) %>% 
+    mutate(post_mean = mean(post), 
+           post_lwr = quantile(post, probs = .025),
+           post_upr = quantile(post, probs = .975),
+           post_lwr90 = quantile(post, probs = .05),
+           post_upr90 = quantile(post, probs = .95)) %>% ungroup()
+  
+  require(ggplot2)
+  myplot <- ggplot(mpost_long_df, aes(x = post, fill = Coefficient)) +
+    geom_density(color = "white", alpha = .5) +
+    geom_vline(xintercept = 0, color = "gray50", linetype = "dashed") +
+    labs(x = "\nCoefficient", y = "Density\n") +
+    scale_fill_manual(values = c("blue", "red", "gray30")) +
+    scale_color_manual(values = c("blue3", "red3", "gray30")) +
+    geom_segment(aes(x=post_lwr, xend=post_upr, y=.05, yend=.05, color = Coefficient), size = .2, alpha = .7) +
+    geom_point(aes(x = post_mean, y = 0.05, color = Coefficient), size = 1, alpha = .8) +
+    theme_bw() +
+    theme(text=element_text(size=10)) +
+    theme(legend.position="none") +
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+    facet_wrap(~Coefficient, ncol = 1, strip.position="top")
+  return(myplot)
+  
+}
+postdensplot(bfit, "neur.c", "ext.c", "Neuroticism", "Extraversion") + theme(text=element_text(size=12))
+
+```
+
+
+<br>
+
+# Some Notes and Comments
+As this example shows, even if one effect is significant and the other is not, they may not be significantly different from each other. There are also cases in which two effects are both significantly different from 0 but may (or may not) be significantly different from each other. Our interpretations of the data may change in important ways as a result of testing differences between coefficients.
+
+Another thing to add is that in the example above, our predictors were measured on the same scale (i.e., they were measured in the same units) and had standard deviations that were of roughly similar size. However, this may not always be in the case. If predictors are measured on different scales, or have very different standard deviations, then one would want to put them on the same scale in order to test differences in their effects. This could involve, for example, standardizing variables so that they are all in standard deviation units. 
+
+
+</font> 
+<font size="2"> 
+*[View .Rmd source code](/Users/zeekatherine/Desktop/WorkSchool/kzee.github.io/CoeffDiff_Demo.Rmd){target="_blank"}*
+</font> 
+<font size="2"> 
+\
+*updated September 7, 2019*
+</font> 
+
+<br>
+
+<font size="2"> 
+
+&nbsp;
+<hr />
+<!--  <p> Copyright &copy; 2019 Katherine S. Zee. All rights reserved. </p>   -->
+<p style="text-align: center;"><span style="color: #808080;"><em>kzee@psych.columbia.edu</em></span></p>
+</font> 
+
+<!-- Add icon library -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+
+<link rel="stylesheet" href="https://cdn.rawgit.com/jpswalsh/academicons/master/css/academicons.min.css">
+
+<!-- Add font awesome icons -->
+<p style="text-align: center;">
+<a href="https://twitter.com/KatherineZee?lang=en/" target="_blank" class="fab fa-twitter"></a>
+<a href="https://github.com/kzee/" target="_blank" class="fab fa-github"></a>
+<a href="https://osf.io/g579q" target="_blank" class="ai ai-osf ai-1x"></a> 
+<a href="https://www.researchgate.net/profile/Katherine_Zee" target="_blank" class="fab fa-researchgate"></a>
+</p>
+
+<font size="2"> 
+<p style="text-align: center;"><span style="color: #808080;">The material above reflects the best of my knowledge on this topic. Please be sure to check your results and code carefully.</span></p>
+</font> 

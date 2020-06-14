@@ -29,6 +29,30 @@
     background-color: white;
   }
 </style>
+<style>
+.collapsible {
+  background-color: #777;
+  color: white;
+  cursor: pointer;
+  padding: 18px;
+  width: 100%;
+  border: none;
+  text-align: left;
+  outline: none;
+  font-size: 15px;
+}
+
+.active, .collapsible:hover {
+  background-color: #555;
+}
+
+.content {
+  padding: 0 18px;
+  display: none;
+  overflow: hidden;
+  background-color: #f1f1f1;
+}
+</style>
 <script type="text/javascript">
 if (window.hljs) {
   hljs.configure({languages: []});
@@ -641,6 +665,25 @@ $(document).ready(function () {
 <hr />
 <!--  <p> Copyright &copy; 2019 Katherine S. Zee. All rights reserved. </p>   -->
 <p style="text-align: center;">
+
+  <button type="button" class="collapsible">Impressum and Data Privacy</button>
+  <div class="content">
+    <p>Impressum</p>
+      Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV<br><br>
+
+      Bjarne Schmalbach<br>
+      Holsteinstraße 2<br>
+      55118 Mainz<br><br>
+
+      Data Privacy<br><br>
+
+      Diese Webseite verwendet keine Cookies.<br>
+      Ihr Browser übermittelt automatisch Daten an den Server, die in einem Logfile für einen Tag gespeichert werden. Konkret werden die folgenden Daten erfasst: IP Adresse des zugreifenden Rechners, Uhrzeit der Anfrage, Browsertyp und -version, Referrer URL.
+      Die Erfassung dieser Daten dient dem Zweck, im Schadensfall böswillige Zugriffe auf den Server zu identifizieren. Diese Daten werden nicht automatisiert regelmäßig ausgewertet oder an Dritte weitergegeben.
+
+      Credit for the layout goes to Katherine Zee.
+  </div>
+
 <span style="color: #808080;"><em><a href="mailto:bjarne.schmalbach@gmail.com">bjarne.schmalbach@gmail.com</a></em></span>
 </p>
 <p></font></p>

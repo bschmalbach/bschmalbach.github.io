@@ -29,80 +29,6 @@
     background-color: white;
   }
 </style>
-<style>
-.wrap-collabsible {
-  margin-bottom: 1.2rem 0;
-}
-
-input[type='checkbox'] {
-  display: none;
-}
-
-.lbl-toggle {
-  display: block;
-
-  font-weight: bold;
-  font-family: monospace;
-  font-size: 1.2rem;
-  text-transform: uppercase;
-  text-align: center;
-
-  padding: 1rem;
-
-  color: #A77B0E;
-  background: #FAE042;
-
-  cursor: pointer;
-
-  border-radius: 7px;
-  transition: all 0.25s ease-out;
-}
-
-.lbl-toggle:hover {
-  color: #7C5A0B;
-}
-
-.lbl-toggle::before {
-  content: ' ';
-  display: inline-block;
-
-  border-top: 5px solid transparent;
-  border-bottom: 5px solid transparent;
-  border-left: 5px solid currentColor;
-  vertical-align: middle;
-  margin-right: .7rem;
-  transform: translateY(-2px);
-
-  transition: transform .2s ease-out;
-}
-
-.toggle:checked + .lbl-toggle::before {
-  transform: rotate(90deg) translateX(-3px);
-}
-
-.collapsible-content {
-  max-height: 0px;
-  overflow: hidden;
-  transition: max-height .25s ease-in-out;
-}
-
-.toggle:checked + .lbl-toggle + .collapsible-content {
-  max-height: 100vh;
-}
-
-.toggle:checked + .lbl-toggle {
-  border-bottom-right-radius: 0;
-  border-bottom-left-radius: 0;
-}
-
-.collapsible-content .content-inner {
-  background: rgba(250, 224, 66, .2);
-  border-bottom: 1px solid rgba(250, 224, 66, .45);
-  border-bottom-left-radius: 7px;
-  border-bottom-right-radius: 7px;
-  padding: .5rem 1rem;
-}
-</style>
 <script type="text/javascript">
 if (window.hljs) {
   hljs.configure({languages: []});
@@ -715,32 +641,6 @@ $(document).ready(function () {
 <hr />
 <!--  <p> Copyright &copy; 2019 Katherine S. Zee. All rights reserved. </p>   -->
 <p style="text-align: center;">
-
-  <div class="wrap-collabsible">
-    <input id="collapsible" class="toggle" type="checkbox">
-    <label for="collapsible" class="lbl-toggle">Impressum and Data Privacy</label>
-    <div class="collapsible-content">
-      <div class="content-inner">
-        <p>
-          Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV<br><br>
-
-          Bjarne Schmalbach<br>
-          Holsteinstraße 2<br>
-          55118 Mainz<br><br>
-
-          Data Privacy<br><br>
-
-          Diese Webseite verwendet keine Cookies.<br>
-          Ihr Browser übermittelt automatisch Daten an den Server, die in einem Logfile für einen Tag gespeichert werden. Konkret werden die folgenden Daten erfasst: IP Adresse des zugreifenden Rechners, Uhrzeit der Anfrage, Browsertyp und -version, Referrer URL.
-          Die Erfassung dieser Daten dient dem Zweck, im Schadensfall böswillige Zugriffe auf den Server zu identifizieren. Diese Daten werden nicht automatisiert regelmäßig ausgewertet oder an Dritte weitergegeben.<br><br>
-
-          Credit for the layout goes to Katherine Zee.
-        </p>
-      </div>
-    </div>
-  </div>
-
-
 <span style="color: #808080;"><em><a href="mailto:bjarne.schmalbach@gmail.com">bjarne.schmalbach@gmail.com</a></em></span>
 </p>
 <p></font></p>
